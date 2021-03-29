@@ -18,23 +18,29 @@ contract CeloCrowdfund {
   event ProjectStarted(
     address contractAddress,
     address projectCreator,
-    string metadata, 
+    string title,
+    string description, 
+    string imageLink,  
     uint256 fundRaisingDeadline,
     uint256 goalAmount
   ); 
 
   function startProject(
-    string calldata metadata, 
+    string calldata title,
+    string calldata description,
+    string calldata imageLink, 
     uint durationInDays, 
     uint amountToRaise
   ) external {
     uint raiseUntil = block.timestamp.add(durationInDays.mul(1 days)); 
-    Project newProject = new Project (payable(msg.sender), metadata, raiseUntil, amountToRaise); 
+    Project newProject = new Project (payable(msg.sender), title, description, imageLink, raiseUntil, amountToRaise); 
     projects.push(newProject); 
     emit ProjectStarted(
       address(newProject),
       msg.sender, 
-      metadata, 
+      title,
+      description, 
+      imageLink, 
       raiseUntil, 
       amountToRaise
     );
@@ -59,7 +65,9 @@ contract Project {
   uint public completeAt; 
   uint256 public currentBalance; 
   uint public raisingDeadline; 
-  string public metadata; // Contains title, description, and image link
+  string public title;
+  string public description; 
+  string public imageLink;
 
   ProjectState public state = ProjectState.Fundraising; // start w/ fundraising 
   mapping (address => uint) public contributions;
@@ -78,12 +86,16 @@ contract Project {
   constructor
   (
     address payable projectCreator, 
-    string memory projectMetadata, 
+    string memory projectTitle,
+    string memory projectDescription,
+    string memory projectImageLink, 
     uint fundRaisingDeadline,
     uint projectGoalAmount
   ) {
     creator = projectCreator; 
-    metadata = projectMetadata; 
+    title = projectTitle; 
+    description = projectDescription;
+    imageLink = projectImageLink;
     goalAmount = projectGoalAmount;
     raisingDeadline = fundRaisingDeadline;
     currentBalance = 0; 
@@ -127,14 +139,18 @@ contract Project {
   function getDetails() public view returns 
   (
     address payable projectCreator, 
-    string memory projectMetadata, 
+    string memory projectTitle,
+    string memory projectDescription,
+    string memory projectImageLink, 
     uint fundRaisingDeadline,
     ProjectState currentState, 
     uint256 projectGoalAmount,
     uint256 currentAmount
   ) {
     projectCreator = creator; 
-    projectMetadata = metadata; 
+    projectTitle = title;
+    projectDescription = description;
+    projectImageLink = imageLink; 
     fundRaisingDeadline = raisingDeadline;
     currentState = state; 
     projectGoalAmount = goalAmount; 
