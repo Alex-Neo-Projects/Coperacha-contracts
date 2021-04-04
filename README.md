@@ -1,5 +1,5 @@
 # Coperacha Contracts
-Solidity smart contracts for [Coperacha](www.coperacha.app).
+Solidity smart contracts for [Coperacha](https://www.coperacha.app).
 
 
 ![infrastructure](https://i.imgur.com/3PqEjaF.png)
