@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-/* NOTE: This contract is based on https://github.com/openberry-ac/crowdfunding
-   and this tutorial written by Sam Benemerito: https://medium.com/openberry/creating-a-simple-crowdfunding-dapp-with-ethereum-solidity-and-vue-js-69ddb8e132dd */
-
 pragma solidity >=0.4.22 <0.9.0;
 
 // Importing OpenZeppelin's SafeMath Implementation
