@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity >=0.4.22 <0.9.0;
 
 // Importing OpenZeppelin's SafeMath Implementation
@@ -100,11 +99,11 @@ contract Project {
 
   // Fund a certain project
   function contribute() external theState(ProjectState.Fundraising) payable {
-    require(msg.sender != creator);
+    // require(msg.sender != creator);
     contributions[msg.sender] = contributions[msg.sender].add(msg.value);
     currentBalance = currentBalance.add(msg.value);
     emit ReceivedFunding(msg.sender, msg.value, currentBalance);
-    checkIfFundingCompleteOrExpired();
+    // checkIfFundingCompleteOrExpired();
   }
 
   // check project state

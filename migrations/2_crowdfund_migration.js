@@ -1,5 +1,5 @@
 const CeloCrowdfund = artifacts.require("CeloCrowdfund");
 
 module.exports = function (deployer) {
-  deployer.deploy(NewCeloCrowdfund);
+  deployer.deploy(CeloCrowdfund);
 };
