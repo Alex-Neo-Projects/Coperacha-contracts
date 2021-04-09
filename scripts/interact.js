@@ -52,8 +52,8 @@ async function initContract(){
   const approveTx = await stableToken.approve(projectInstanceContract._address, 10000000).send({from: account.address, feeCurrency: stableToken.address});
   console.log("Approved spending for new project");
 
-  var donate = await projectInstanceContract.methods.contribute(11).send({from: account.address, feeCurrency: stableToken.address});
-  console.log("Donated to new project")
+  // var donate = await projectInstanceContract.methods.contribute(11).send({from: account.address, feeCurrency: stableToken.address});
+  // console.log("Donated to new project");
 
   var payOut = await projectInstanceContract.methods.payOut().send({from: account.address, feeCurrency: stableToken.address});
   console.log("Paying out from project")
