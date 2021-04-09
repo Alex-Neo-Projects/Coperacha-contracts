@@ -46,56 +46,45 @@ async function initContract(){
   const account = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
   kit.connection.addAccount(account.privateKey)
 
-  console.log("ADDRESS: ", account.address);
+  // Print wallet address so we can check it on the block explorer
+  console.log("Account address: ", account.address);
 
   // Get the cUSD ContractKit wrapper 
   const stableToken = await kit.contracts.getStableToken();
 
   var projectGoal = BigNumber(1E18);
 
-  // Shorthand function to pause script execution 
-  const wait = ms => new Promise(res => setTimeout(res, ms));
-
   // Create a new project
-  await celoCrowdfundContract.methods.startProject(
-    stableToken.address, 'Test project title', 'test project description', 'https://i.imgur.com/T9RAp1T.jpg', 5, projectGoal)
-    .send({from: account.address, feeCurrency: stableToken.address})
-    .then(async () => {
-      console.log("Created a new project"); 
-
-      var projectDetails = await projectInstanceContract.methods.getDetails().call();
-      console.log("PROJECT DETAILS: ", projectDetails);
-      console.log("Contract address: ", projectInstanceContract._address);
-
-      // Celo uses 18 decimal places. Set approval to be for 5 cUSD 
-      var approvedAmount = BigNumber(5E18); 
-      
-      // Need to approve the use of using cUSD with the smart contract. 
-      await stableToken.approve(projectInstanceContract._address, approvedAmount).send({from: account.address, feeCurrency: stableToken.address});
-      
-      console.log("Approved spending for new project");
-
-      /* We need to wait for the approval to be mined and reflected by the Celo network. 
-         To keep things simple we can just wait 7 seconds [not recommended for non-tutorial scripts] */
-      await wait(7000); 
-      console.log("Done waiting 7 seconds");
-    }).then(async () => {
-      // Send 2 cUSD to the contract
-      var sendAmount = BigNumber(2E18); 
-
-      // call contribute() function with 2 cUSD
-      await projectInstanceContract.methods.contribute(sendAmount).send({from: account.address, feeCurrency: stableToken.address});
-      console.log("Donated to new project");
-    }).then(async () => {
+  await celoCrowdfundContract.methods.startProject(stableToken.address, 'Test project title', 'test project description', 'https://i.imgur.com/T9RAp1T.jpg', 5, projectGoal).send({from: account.address, feeCurrency: stableToken.address}).then(async () => {
+    console.log("Created a new project"); 
+  }).then(async () => {
+    var projectDetails = await projectInstanceContract.methods.getDetails().call();
+    console.log("Project details: ", projectDetails);
+  }).then(async () => {
+    // Celo uses 18 decimal places. Set approval to be for 5 cUSD 
+    var approvedAmount = BigNumber(5E18); 
+  
+    // // Need to approve the use of using cUSD with the smart contract. 
+    await stableToken.approve(projectInstanceContract._address, approvedAmount).send({from: account.address, feeCurrency: stableToken.address});
+    console.log("Approved spending for new project\n");
+  }).then(async () => {
+    // Send 2 cUSD to the contract
+    // var sendAmount = BigNumber(2E18); 
+    var sendAmount = BigNumber(1E17); 
+    
+    // Call contribute() function with 2 cUSD
+    await projectInstanceContract.methods.contribute(sendAmount).send({from: account.address, feeCurrency: stableToken.address});
+    console.log("Donated to the new project\n");
+  }).then(async () => {
       var balanceOfContract = (await stableToken.balanceOf(projectInstanceContract._address)).toString();
       console.log("Contract address: ", projectInstanceContract._address);
-      console.log("Contract cUSD balance: ", balanceOfContract);
-    
+      console.log("Contract cUSD balance: ", balanceOfContract/1E18, " cUSD\n");
+      
       var balanceOfUser = (await stableToken.balanceOf(account.address)).toString();
       console.log("User's address: ", account.address);
-      console.log("User's cUSD balance: ", balanceOfUser);
-    });
- 
+      console.log("User's cUSD balance: ", balanceOfUser/1E18, " cUSD");
+  })
+
 
 
   // var payOut = await projectInstanceContract.methods.payOut().send({from: account.address, feeCurrency: stableToken.address});
