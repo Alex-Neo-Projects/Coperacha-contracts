@@ -3,12 +3,14 @@ pragma solidity >=0.4.22 <0.9.0;
 
 // Importing OpenZeppelin's SafeMath Implementation
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract CeloCrowdfund {
   using SafeMath for uint256; 
 
   // List all the projects 
   Project[] private projects; 
+  IERC20 private _cUSDToken;
 
   // event for when new project starts
   event ProjectStarted(
@@ -21,7 +23,18 @@ contract CeloCrowdfund {
     uint256 goalAmount
   ); 
 
+  constructor(IERC20 token) {
+    _cUSDToken = token; 
+  }
+
+  function testTokenTransfer(uint256 amount) external {
+    address from = msg.sender;
+
+    _cUSDToken.transferFrom(from, address(this), amount);
+  }
+
   function startProject(
+    IERC20 _cUSDToken,
     string calldata title,
     string calldata description,
     string calldata imageLink, 
@@ -29,7 +42,7 @@ contract CeloCrowdfund {
     uint amountToRaise
   ) external {
     uint raiseUntil = block.timestamp.add(durationInDays.mul(1 days)); 
-    Project newProject = new Project (payable(msg.sender), title, description, imageLink, raiseUntil, amountToRaise); 
+    Project newProject = new Project (_cUSDToken, payable(msg.sender), title, description, imageLink, raiseUntil, amountToRaise); 
     projects.push(newProject); 
     emit ProjectStarted(
       address(newProject),
@@ -55,6 +68,7 @@ contract Project {
     Expired, 
     Successful
   }
+  IERC20 private _cUSDToken;
 
   address payable public creator; 
   uint public goalAmount; 
@@ -81,6 +95,7 @@ contract Project {
 
   constructor
   (
+    IERC20 token,
     address payable projectCreator, 
     string memory projectTitle,
     string memory projectDescription,
@@ -88,6 +103,7 @@ contract Project {
     uint fundRaisingDeadline,
     uint projectGoalAmount
   ) {
+    _cUSDToken = token; 
     creator = projectCreator; 
     title = projectTitle; 
     description = projectDescription;
@@ -98,38 +114,41 @@ contract Project {
   }
 
   // Fund a certain project
-  function contribute() external theState(ProjectState.Fundraising) payable {
+  function contribute(uint256 amount) external theState(ProjectState.Fundraising) payable {
     // require(msg.sender != creator);
-    contributions[msg.sender] = contributions[msg.sender].add(msg.value);
-    currentBalance = currentBalance.add(msg.value);
-    emit ReceivedFunding(msg.sender, msg.value, currentBalance);
+    _cUSDToken.transferFrom(msg.sender, address(this), amount);
+
+    contributions[msg.sender] = contributions[msg.sender].add(amount);
+    currentBalance = currentBalance.add(amount);
+    emit ReceivedFunding(msg.sender, amount, currentBalance);
     // checkIfFundingCompleteOrExpired();
   }
 
   // check project state
   function checkIfFundingCompleteOrExpired() public {
-    if (currentBalance >= goalAmount) {
-      state = ProjectState.Successful; 
-      payOut(); 
-    } else if (block.timestamp > raisingDeadline) {
+    if (block.timestamp > raisingDeadline) {
       state = ProjectState.Expired;
     }
     completeAt = block.timestamp; 
   }
 
-  function payOut() internal theState(ProjectState.Successful) returns (bool) {
+  function payOut() external returns (bool) {
+    // require(msg.sender == creator); 
+
     uint256 totalRaised = currentBalance; 
     currentBalance = 0; 
 
-    if (creator.send(totalRaised)) {
-      emit CreatorPaid(creator);
-      return true; 
-    } else { 
-      currentBalance = totalRaised; 
-      state = ProjectState.Successful;
-    }
+    _cUSDToken.transfer(msg.sender, totalRaised);
 
-    return false; 
+    // if (_cUSDToken.transfer(msg.sender, totalRaised)) {
+    //   emit CreatorPaid(creator);
+    //   return true; 
+    // } else { 
+    //   currentBalance = totalRaised; 
+    //   state = ProjectState.Successful;
+    // }
+
+    // return false; 
   }
 
   function getDetails() public view returns 
