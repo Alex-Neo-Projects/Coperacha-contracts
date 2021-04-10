@@ -15,6 +15,7 @@ contract CeloCrowdfund {
   event ProjectStarted(
     address contractAddress,
     address projectCreator,
+    string creatorName,
     string title,
     string description, 
     string imageLink,  
@@ -23,7 +24,8 @@ contract CeloCrowdfund {
   ); 
 
   function startProject(
-    IERC20 _cUSDToken,
+    IERC20 cUSDToken,
+    string calldata creatorName,
     string calldata title,
     string calldata description,
     string calldata imageLink, 
@@ -31,11 +33,12 @@ contract CeloCrowdfund {
     uint amountToRaise
   ) external {
     uint raiseUntil = block.timestamp.add(durationInDays.mul(1 days)); 
-    Project newProject = new Project (_cUSDToken, payable(msg.sender), title, description, imageLink, raiseUntil, amountToRaise); 
+    Project newProject = new Project (cUSDToken, payable(msg.sender), creatorName, title, description, imageLink, raiseUntil, amountToRaise); 
     projects.push(newProject); 
     emit ProjectStarted(
       address(newProject),
       msg.sender, 
+      creatorName,
       title,
       description, 
       imageLink, 
@@ -57,18 +60,18 @@ contract Project {
     Expired, 
     Successful
   }
-  IERC20 private _cUSDToken;
+  IERC20 private cUSDToken;
 
   address payable public creator; 
   uint public goalAmount; 
-  uint public completeAt; 
   uint256 public currentBalance; 
   uint public raisingDeadline; 
+  string public creatorName;
   string public title;
   string public description; 
   string public imageLink;
 
-  ProjectState public state = ProjectState.Fundraising; // start w/ fundraising 
+  ProjectState public state = ProjectState.Fundraising; // start with fundraising 
   mapping (address => uint) public contributions;
   
   // Event when funding is received
@@ -86,13 +89,15 @@ contract Project {
   (
     IERC20 token,
     address payable projectCreator, 
+    string memory projectCreatorName,
     string memory projectTitle,
     string memory projectDescription,
     string memory projectImageLink, 
     uint fundRaisingDeadline,
     uint projectGoalAmount
   ) {
-    _cUSDToken = token; 
+    cUSDToken = token; 
+    creatorName = projectCreatorName;
     creator = projectCreator; 
     title = projectTitle; 
     description = projectDescription;
@@ -104,20 +109,19 @@ contract Project {
 
   // Fund a certain project
   function contribute(uint256 amount) external theState(ProjectState.Fundraising) payable {
-    _cUSDToken.transferFrom(msg.sender, address(this), amount);
+    cUSDToken.transferFrom(msg.sender, address(this), amount);
 
     contributions[msg.sender] = contributions[msg.sender].add(amount);
     currentBalance = currentBalance.add(amount);
     emit ReceivedFunding(msg.sender, amount, currentBalance);
-    checkIfFundingCompleteOrExpired();
+    checkIfFundingExpired();
   }
 
   // check project state
-  function checkIfFundingCompleteOrExpired() public {
+  function checkIfFundingExpired() public {
     if (block.timestamp > raisingDeadline) {
       state = ProjectState.Expired;
     }
-    completeAt = block.timestamp; 
   }
 
   function payOut() external returns (bool result) {
@@ -126,7 +130,7 @@ contract Project {
     uint256 totalRaised = currentBalance; 
     currentBalance = 0; 
 
-    if (_cUSDToken.transfer(msg.sender, totalRaised)) {
+    if (cUSDToken.transfer(msg.sender, totalRaised)) {
       emit CreatorPaid(creator);
       state = ProjectState.Successful;
       return true; 
@@ -141,6 +145,7 @@ contract Project {
   function getDetails() public view returns 
   (
     address payable projectCreator, 
+    string memory projectCreatorName,
     string memory projectTitle,
     string memory projectDescription,
     string memory projectImageLink, 
@@ -149,7 +154,8 @@ contract Project {
     uint256 projectGoalAmount,
     uint256 currentAmount
   ) {
-    projectCreator = creator; 
+    projectCreator = creator;
+    projectCreatorName = creatorName;  
     projectTitle = title;
     projectDescription = description;
     projectImageLink = imageLink; 

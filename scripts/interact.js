@@ -76,11 +76,11 @@ async function initContract() {
   
   var sendAmount = BigNumber(2E18); 
 
-  // Call contribute() function with 2 cUSD
+  // // Call contribute() function with 2 cUSD
   await projectInstanceContract.methods.contribute(sendAmount).send({from: account.address, feeCurrency: stableToken.address});
-  console.log("Contributed to the project\n");
+  // console.log("Contributed to the project\n");
     
-  await payOut(projectInstanceContract, stableToken);
+  // await payOut(projectInstanceContract, stableToken);
 
   await printBalances(stableToken); 
 }
