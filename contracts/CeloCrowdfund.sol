@@ -10,7 +10,6 @@ contract CeloCrowdfund {
 
   // List all the projects 
   Project[] private projects; 
-  IERC20 private _cUSDToken;
 
   // event for when new project starts
   event ProjectStarted(
@@ -22,16 +21,6 @@ contract CeloCrowdfund {
     uint256 fundRaisingDeadline,
     uint256 goalAmount
   ); 
-
-  constructor(IERC20 token) {
-    _cUSDToken = token; 
-  }
-
-  function testTokenTransfer(uint256 amount) external {
-    address from = msg.sender;
-
-    _cUSDToken.transferFrom(from, address(this), amount);
-  }
 
   function startProject(
     IERC20 _cUSDToken,
@@ -115,13 +104,12 @@ contract Project {
 
   // Fund a certain project
   function contribute(uint256 amount) external theState(ProjectState.Fundraising) payable {
-    // require(msg.sender != creator);
     _cUSDToken.transferFrom(msg.sender, address(this), amount);
 
     contributions[msg.sender] = contributions[msg.sender].add(amount);
     currentBalance = currentBalance.add(amount);
     emit ReceivedFunding(msg.sender, amount, currentBalance);
-    // checkIfFundingCompleteOrExpired();
+    checkIfFundingCompleteOrExpired();
   }
 
   // check project state
@@ -132,23 +120,22 @@ contract Project {
     completeAt = block.timestamp; 
   }
 
-  function payOut() external returns (bool) {
-    // require(msg.sender == creator); 
+  function payOut() external returns (bool result) {
+    require(msg.sender == creator); 
 
     uint256 totalRaised = currentBalance; 
     currentBalance = 0; 
 
-    _cUSDToken.transfer(msg.sender, totalRaised);
+    if (_cUSDToken.transfer(msg.sender, totalRaised)) {
+      emit CreatorPaid(creator);
+      state = ProjectState.Successful;
+      return true; 
+    } else { 
+      currentBalance = totalRaised; 
+      state = ProjectState.Successful;
+    }
 
-    // if (_cUSDToken.transfer(msg.sender, totalRaised)) {
-    //   emit CreatorPaid(creator);
-    //   return true; 
-    // } else { 
-    //   currentBalance = totalRaised; 
-    //   state = ProjectState.Successful;
-    // }
-
-    // return false; 
+    return false; 
   }
 
   function getDetails() public view returns 
