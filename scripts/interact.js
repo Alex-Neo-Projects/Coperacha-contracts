@@ -31,7 +31,7 @@ async function printBalances(stableToken) {
 }
 
 async function createProject(celoCrowdfundContract, projectGoal, stableToken) {
-  await celoCrowdfundContract.methods.startProject(stableToken.address, 'Test project title', 'test project description', 'https://i.imgur.com/T9RAp1T.jpg', 5, projectGoal).send({from: account.address, feeCurrency: stableToken.address});
+  await celoCrowdfundContract.methods.startProject(stableToken.address, 'alex', 'NODEJS SCRIPT', 'Alex is testing functions on nodejs rn', 'https://i.imgur.com/T9RAp1T.jpg', 5, projectGoal).send({from: account.address, feeCurrency: stableToken.address});
   return "Created new project"; 
 }
 
@@ -55,12 +55,12 @@ async function initContract() {
   stableToken = await kit.contracts.getStableToken();
 
   var projectGoal = BigNumber(1E18);
-  var projectReceipt = await createProject(celoCrowdfundContract, projectGoal, stableToken);
+  // var projectReceipt = await createProject(celoCrowdfundContract, projectGoal, stableToken);
   // console.log(projectReceipt);
 
   // Return projects inside the celo crowdfund contract
   var result = await celoCrowdfundContract.methods.returnProjects().call();
-  // console.log(result);
+  console.log(result);
 
   // Loop through the existing projects and save the last created project instance
   for (const projectAddress of result) {  
@@ -69,6 +69,8 @@ async function initContract() {
       Project.abi,
       deployedNetwork && projectAddress
     );
+
+    console.log(await projectInstanceContract.methods.getDetails().call());
   }
   
   var projectGoal = BigNumber(5E18);
@@ -77,7 +79,7 @@ async function initContract() {
   var sendAmount = BigNumber(2E18); 
 
   // // Call contribute() function with 2 cUSD
-  await projectInstanceContract.methods.contribute(sendAmount).send({from: account.address, feeCurrency: stableToken.address});
+  // await projectInstanceContract.methods.contribute(sendAmount).send({from: account.address, feeCurrency: stableToken.address});
   // console.log("Contributed to the project\n");
     
   // await payOut(projectInstanceContract, stableToken);

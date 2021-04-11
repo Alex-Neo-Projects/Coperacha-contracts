@@ -64,6 +64,7 @@ contract Project {
 
   address payable public creator; 
   uint public goalAmount; 
+  uint256 public totalRaised; 
   uint256 public currentBalance; 
   uint public raisingDeadline; 
   string public creatorName;
@@ -113,6 +114,7 @@ contract Project {
 
     contributions[msg.sender] = contributions[msg.sender].add(amount);
     currentBalance = currentBalance.add(amount);
+    totalRaised = currentBalance; 
     emit ReceivedFunding(msg.sender, amount, currentBalance);
     checkIfFundingExpired();
   }
@@ -127,7 +129,7 @@ contract Project {
   function payOut() external returns (bool result) {
     require(msg.sender == creator); 
 
-    uint256 totalRaised = currentBalance; 
+    totalRaised = currentBalance; 
     currentBalance = 0; 
 
     if (cUSDToken.transfer(msg.sender, totalRaised)) {
@@ -152,7 +154,8 @@ contract Project {
     uint fundRaisingDeadline,
     ProjectState currentState, 
     uint256 projectGoalAmount,
-    uint256 currentAmount
+    uint256 currentAmount, 
+    uint256 projectTotalRaised
   ) {
     projectCreator = creator;
     projectCreatorName = creatorName;  
@@ -163,5 +166,6 @@ contract Project {
     currentState = state; 
     projectGoalAmount = goalAmount; 
     currentAmount = currentBalance; 
+    projectTotalRaised = totalRaised; 
   }
 }
