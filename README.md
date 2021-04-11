@@ -1,5 +1,5 @@
 # Coperacha Contracts
-Solidity smart contracts for [Coperacha](https://www.coperacha.app).
+This repo contains the Solidity smart contracts for [Coperacha](https://www.coperacha.app).
 
 These contracts serve as the backend for the Coperacha App. The source code for the app can be found [here](https://github.com/Alex-Neo-Projects/Coperacha-app), as well as a longer readme, download links, and screenshots of the app in use. 
 
