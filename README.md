@@ -13,6 +13,8 @@ Using Celo meant we could accept payments without all the infrastructure overhea
 We made a three part tutorial series on creating, deploying, and interacting with the Coperacha contracts. If you get stuck reading the code, feel free to check out the tutorials: 
 
 [1. Building a Crowdfunding Smart Contract in Celo](https://github.com/alexreyes/Celo-Crowdfunding-Tutorial)
+
 [2. Deploying a Crowdfunding Smart Contract in Celo](https://github.com/alexreyes/Celo-Crowdfunding-Tutorial-2)
+
 [3. Interacting with the Crowdfunding Smart Contracts in Celo](https://github.com/alexreyes/Celo-Crowdfunding-Tutorial-3)
 
